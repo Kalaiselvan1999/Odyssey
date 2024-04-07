@@ -1,46 +1,45 @@
 from rest_framework import serializers
-from web_app.models import User, Odyssey, Requests
+from web_app.models import User, Odyssey, Requests, State
+
+class ActiveRequestSerializer(serializers.ListSerializer):
+
+    def to_representation(self, instance):
+        return super(ActiveRequestSerializer, self).to_representation(instance.filter(is_active=True))
 
 class RequestsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Requests
-        fields = '__all__'
+        list_serializer_class = ActiveRequestSerializer
+        exclude = ("created_at", "modified_on")
+
+class StateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = State
+        exclude = ("created_at", "modified_on")
 
 class OdysseySerializer(serializers.ModelSerializer):
 
-    requests = RequestsSerializer(many=True, read_only=True)
+    odyssies = RequestsSerializer(many=True, read_only=True)
+    user = serializers.SerializerMethodField()
+    from_place = serializers.PrimaryKeyRelatedField(source="from_place.name", read_only=True)
+    destination_place = serializers.PrimaryKeyRelatedField(source="destination_place.name", read_only=True)
+
 
     class Meta:
         model = Odyssey
-        fields = '__all__'
+        exclude = ("created_at", "modified_on")
+
+    def get_user(self, obj):
+        return obj.user.all().values("id", "user_name", "first_name", "last_name")
 
 class UserSerializer(serializers.ModelSerializer):
 
-    odyssies = serializers.SerializerMethodField()
-    requested_odyssey = serializers.SerializerMethodField()
+    odysseies_organiser = OdysseySerializer(many=True, read_only=True)
+    requests = RequestsSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
         exclude = ("created_at", "modified_on",)
 
-    def get_odyssies(self, obj):
-        return [
-            {
-                'id': odyssey.id,
-                'start_date': odyssey.start_date,
-                'end_date': odyssey.end_date,
-                'from_place': odyssey.from_place.name,
-                'destination_place': odyssey.destination_place.name,
-                'is_private': odyssey.is_private,
-                'users': [{"id": user.id, "user": user.user_name} for user in odyssey.user.all()]
-            }
-            for odyssey in obj.odysseies_organiser.all()
-        ]
-
-
-
-    def get_requested_odyssey(self, obj):
-        data = obj.requests.all().values("odyssey__organiser__user_name")
-        odysseys = [{"odyssies": item["odyssey__organiser__user_name"]} for item in data]
-        return odysseys

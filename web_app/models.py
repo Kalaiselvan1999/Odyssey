@@ -62,7 +62,7 @@ class Odyssey(BaseModel):
         verbose_name_plural = "Odyssies"
 
     def __str__(self):
-        return f"{self.organiser.user_name} - {str(self.start_date)}"
+        return f"{self.from_place} - {self.destination_place}"
 
 class Requests(BaseModel):
     user = models.ForeignKey(User, verbose_name='User', related_name='requests', related_query_name='request', on_delete=models.CASCADE)
