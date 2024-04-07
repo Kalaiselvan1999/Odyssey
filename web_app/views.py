@@ -81,3 +81,4 @@ class RequestDetail(APIView):
         user_request: Requests = Requests.objects.get(pk=pk)
         user_request.is_active = False
         user_request.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
