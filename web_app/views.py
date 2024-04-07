@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from datetime import date
 
 from web_app.models import User, Odyssey, Requests
 from web_app.serializers import UserSerializer
@@ -50,29 +51,33 @@ class OdysseyDetail(APIView):
 
 class RequestList(APIView):
 
-    def get(self, request):
-        pass
-
     def post(self, request):
-        pass
+        data = request.data
+        user = User.objects.get(pk=data.get('user'))
+        odyssey = Odyssey.objects.get(pk=data.get('odyssey'))
+        Requests.objects.create(user=user, odyssey=odyssey, requested_date=date.today())
+        return Response({"message": "Request successfully sent"}, status=status.HTTP_201_CREATED)
 
 class RequestDetail(APIView):
 
     def put(self, request, pk):
         user_request: Requests = Requests.objects.get(pk=pk)
         if user_request.is_active == True:
-            if request.query_params.get('is_accepted') == True:
+            if request.query_params.get('is_accepted'):
                 user_request.is_active = False
+                user_request.is_accepted = True
                 user_request.save()
                 user_request.odyssey.user.add(user_request.user)
                 return Response({"message": "Accepted"}, status=status.HTTP_200_OK)
-            elif request.query_params.get('is_accepted') == False:
+            else:
                 user_request.is_active = False
+                user_request.is_accepted = False
                 user_request.save()
                 return Response({"message": "Request has been rejected"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "No records found"}, status=status.HTTP_200_OK)
 
-
-    def delete(self):
-        pass
+    def delete(self, request, pk):
+        user_request: Requests = Requests.objects.get(pk=pk)
+        user_request.is_active = False
+        user_request.save()
