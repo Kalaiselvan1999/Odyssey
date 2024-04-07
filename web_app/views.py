@@ -59,15 +59,14 @@ class RequestList(APIView):
 class RequestDetail(APIView):
 
     def put(self, request, pk):
-        data = request.data
         user_request: Requests = Requests.objects.get(pk=pk)
         if user_request.is_active == True:
-            if data['is_accepted'] == True:
+            if request.query_params.get('is_accepted') == True:
                 user_request.is_active = False
                 user_request.save()
                 user_request.odyssey.user.add(user_request.user)
                 return Response({"message": "Accepted"}, status=status.HTTP_200_OK)
-            elif data['is_accepted'] == False:
+            elif request.query_params.get('is_accepted') == False:
                 user_request.is_active = False
                 user_request.save()
                 return Response({"message": "Request has been rejected"}, status=status.HTTP_200_OK)
