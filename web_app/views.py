@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from datetime import date
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from web_app.models import User, Odyssey, Requests
 from web_app.serializers import UserSerializer
@@ -16,6 +17,7 @@ class UserList(APIView):
 
     def post(self, request):
         pass
+
 
 class UserDetail(APIView):
 
