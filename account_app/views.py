@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.validators import ValidationError
 
 from web_app.models import User
+from account_app.tasks import send_mail
 
 # Create your views here.
 
@@ -24,6 +25,7 @@ class SignupView(APIView):
             raise ValidationError("Password does not match")
 
         user = User.objects.create(email=email, user_name=user_name, password=make_password(password_1))
+        send_mail.delay(email, "Welcome to odyssey, you have created to a new account")
         refresh = RefreshToken.for_user(user)
         data = {'refresh': str(refresh),
                 'access': str(refresh.access_token)}

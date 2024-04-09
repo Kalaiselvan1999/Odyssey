@@ -138,3 +138,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+CELERY_BROKER_URL = 'amqp://localhost'
+SENDER_MAIL_ID = os.environ.get('SENDER_MAIL_ID')
+SENDER_MAIL_PASSWORD = os.environ.get('SENDER_MAIL_PASSWORD')
