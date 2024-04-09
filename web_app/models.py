@@ -22,6 +22,7 @@ class User(BaseModel):
     contact_no = models.PositiveBigIntegerField(verbose_name='Contact No', blank=True, null=True)
     last_login = models.DateTimeField(verbose_name='Last Login', blank=True, null=True)
     otp = models.IntegerField(verbose_name='OTP', blank=True, null=True)
+    is_email_verified = models.BooleanField(verbose_name='Is Email verified', default=False)
     # todo profile photo
 
     class Meta:

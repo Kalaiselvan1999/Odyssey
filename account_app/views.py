@@ -1,3 +1,4 @@
+import random
 from rest_framework.views import APIView
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -24,8 +25,9 @@ class SignupView(APIView):
         if password_1 != password_2:
             raise ValidationError("Password does not match")
 
-        user = User.objects.create(email=email, user_name=user_name, password=make_password(password_1))
-        send_mail.delay(email, "Welcome to odyssey, you have created to a new account")
+        otp = random.randint(100000, 999999)
+        user = User.objects.create(email=email, user_name=user_name, password=make_password(password_1), otp=otp)
+        send_mail.delay(user.email, f"Welcome to odyssey. This is your OTP {otp}")
         refresh = RefreshToken.for_user(user)
         data = {'refresh': str(refresh),
                 'access': str(refresh.access_token)}
@@ -37,3 +39,14 @@ class LoginView(APIView):
 
     def post(self, request):
         pass
+
+
+class VerifyEmail(APIView):
+
+    def post(self, request):
+        user = User.objects.get(id=request.data.get('user_id'))
+        if user.otp == request.data.get('otp'):
+            user.is_email_verified = True
+            user.save()
+            return Response({"data":  "OTP Verified"})
+        return Response({"message": "OTP does not match"})
